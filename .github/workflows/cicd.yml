@@ -1,0 +1,15 @@
+name: CI/CD to Render
+
+on:
+  push:
+    branches:
+      - main
+      - feat/v1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deployment
+        run: |
+          curl -X GET "${{ secrets.RENDER_DEPLOY_URL }}"
