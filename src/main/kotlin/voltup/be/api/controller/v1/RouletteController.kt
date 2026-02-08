@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
  * 룰렛 API (v1).
  * 목적: 당일 1인 1회 참여, 당첨 포인트 지급 및 예산 차감. SystemDailyBudget·DailyBudget 비관적 락 적용.
  */
-@Tag(name = "Roulette (v1)", description = "포인트 룰렛 참여 API")
+@Tag(name = "User API", description = "일반 사용자 기능")
 @RestController
 @RequestMapping("/api/v1/roulette")
 class RouletteController(

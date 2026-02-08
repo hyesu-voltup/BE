@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
  * 어드민 일일 예산 API.
  * 목적: 오늘 예산 잔액 확인 및 강제 설정.
  */
-@Tag(name = "Admin Budget", description = "어드민 일일 예산 관리 API")
+@Tag(name = "Admin API", description = "관리자 전용 기능")
 @RestController
 @RequestMapping("/api/v1/admin/budget")
 class AdminBudgetController(

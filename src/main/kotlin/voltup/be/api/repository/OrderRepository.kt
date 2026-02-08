@@ -16,4 +16,8 @@ interface OrderRepository : JpaRepository<Order, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM Order o WHERE o.id = :id")
     fun findByIdForUpdate(@Param("id") id: Long): Order?
+
+    fun findByUserIdOrderByCreatedAtDesc(userId: Long): List<Order>
+
+    fun findAllByOrderByCreatedAtDesc(): List<Order>
 }

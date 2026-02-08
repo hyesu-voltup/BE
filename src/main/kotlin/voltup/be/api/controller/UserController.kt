@@ -19,7 +19,7 @@ import voltup.be.api.service.UserService
  * 사용자 API.
  * 목적: 사용자 생성·조회 REST 엔드포인트.
  */
-@Tag(name = "User", description = "사용자 API")
+@Tag(name = "User API", description = "일반 사용자 기능")
 @RestController
 @RequestMapping("/api/v1/users")
 class UserController(

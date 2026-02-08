@@ -34,6 +34,18 @@ class UserService(
     }
 
     /**
+     * 간편 로그인: 닉네임으로 조회, 없으면 생성 후 반환.
+     * @return 로그인(또는 생성)된 User 엔티티
+     */
+    @Transactional
+    fun loginOrCreate(nickname: String): User {
+        userRepository.findByLoginId(nickname)?.let { return it }
+        val user = createUser(voltup.be.api.dto.request.UserCreateRequest(loginId = nickname, name = nickname))
+        createPointAccountFor(user)
+        return user
+    }
+
+    /**
      * ID로 사용자 조회.
      * @return UserResponse
      * @throws NotFoundException 사용자 없을 때

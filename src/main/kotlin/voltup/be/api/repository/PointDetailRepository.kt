@@ -36,4 +36,22 @@ interface PointDetailRepository : JpaRepository<PointDetail, Long> {
         type: PointDetailType,
         referenceId: Long
     ): PointDetail?
+
+    /** 해당 포인트 계정의 만료 미적용 건 중 expiredAt <= before (조회 시점 만료 반영용) */
+    @Query(
+        "SELECT d FROM PointDetail d WHERE d.point.id = :pointId AND d.applied = false AND d.expiredAt <= :before"
+    )
+    fun findExpiredAndNotAppliedByPointId(
+        @Param("pointId") pointId: Long,
+        @Param("before") before: LocalDateTime
+    ): List<PointDetail>
+
+    /** 유효한(만료되지 않은) 획득 내역: applied=false, expiredAt > now */
+    @Query(
+        "SELECT d FROM PointDetail d WHERE d.point.id = :pointId AND d.applied = false AND d.expiredAt > :now ORDER BY d.createdAt DESC"
+    )
+    fun findValidByPointId(
+        @Param("pointId") pointId: Long,
+        @Param("now") now: LocalDateTime
+    ): List<PointDetail>
 }
