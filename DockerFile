@@ -9,4 +9,5 @@ RUN ./gradlew build
 # NEON DB와 연결해야 합니다.
 EXPOSE 10000
 
-CMD ["java", "-jar", "build/libs/api-0.0.1-SNAPSHOT.jar"]
+# 배포시에는 prod 프로필 사용
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-Dserver.port=10000", "-jar", "app.jar", "build/libs/api-0.0.1-SNAPSHOT.jar"]
