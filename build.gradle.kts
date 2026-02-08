@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-h2console")
+	// implementation("org.springframework.boot:spring-boot-h2console")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -29,6 +29,10 @@ dependencies {
 	implementation("tools.jackson.module:jackson-module-kotlin")
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("com.mysql:mysql-connector-j")
+
+	// NEON DB - postgres
+	implementation("org.postgresql:postgresql:42.7.1")
+
 	// Swagger(OpenAPI 3) 문서화 - Spring Boot 3.x
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
