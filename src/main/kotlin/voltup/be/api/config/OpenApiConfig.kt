@@ -4,6 +4,8 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import io.swagger.v3.oas.models.servers.Server
+import io.swagger.v3.oas.models.Components
 
 /**
  * Swagger(OpenAPI 3) 설정.
@@ -14,6 +16,9 @@ class OpenApiConfig {
 
     @Bean
     fun openAPI(): OpenAPI = OpenAPI()
+        .addServersItem(Server().url("https://voltupbe.onrender.com").description("Prod Server"))
+        .addServersItem(Server().url("http://localhost:8080").description("Local Server"))
+        .components(Components())
         .info(
             Info()
                 .title("포인트 룰렛 API")
