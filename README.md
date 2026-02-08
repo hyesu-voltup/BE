@@ -48,11 +48,16 @@
 
 ### 1. 인증 (Auth)
 
+- **일반 로그인**: 아래와 동일한 `POST /api/v1/auth/login` 사용. 닉네임(로그인 ID) 입력 시 사용자 생성/조회 후 `userId` 반환.
+- **어드민 로그인**: 동일한 로그인 API 사용. 단, **로그인 ID가 `ADMIN`으로 시작하는 계정**만 어드민으로 간주됩니다.  
+  어드민 전용 API(예산, 주문 목록/취소, 상품 등록/수정, 룰렛 참여 기록/취소)는 **ADMIN으로 시작한 로그인 ID로 로그인한 사용자만** 호출 가능합니다.  
+  (일반 로그인과 기능은 같고, 어드민 기능 접근 시 서버에서 로그인 ID prefix로 권한을 구분합니다.)
+
 #### 1.1 간편 로그인
 
 | 항목 | 내용 |
 |------|------|
-| **역할** | 닉네임만으로 로그인. 미가입 시 자동 생성 후 `userId` 반환. 이후 API 호출 시 `X-User-Id`로 사용. |
+| **역할** | 닉네임(로그인 ID)만으로 로그인. 미가입 시 자동 생성 후 `userId` 반환. 이후 API 호출 시 `X-User-Id`로 사용. 일반/어드민 동일 API. |
 | **Method** | `POST` |
 | **Path** | `/api/v1/auth/login` |
 
@@ -174,42 +179,9 @@
 | pointPrice | number | 1개당 포인트 가격 |
 | stock | number | 재고 수량 |
 
-#### 3.2 상품 등록
+- **상품 등록**은 어드민 전용입니다. → [관리자 API > 3. 상품 (Admin Products) > 3.1 상품 등록](#31-상품-등록) 참고.
 
-| 항목 | 내용 |
-|------|------|
-| **역할** | 상품명·포인트 가격·재고로 상품 생성. |
-| **Method** | `POST` |
-| **Path** | `/api/v1/products` |
-
-**Request Body**
-
-```json
-{
-  "name": "기프트카드 5000원",
-  "pointPrice": 500,
-  "stock": 100
-}
-```
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| name | string | O | 상품명 (최대 200자) |
-| pointPrice | number | O | 1개당 포인트 가격 (0 이상) |
-| stock | number | - | 재고 (0 이상, 기본 0) |
-
-**Response** `201 Created`
-
-```json
-{
-  "id": 1,
-  "name": "기프트카드 5000원",
-  "pointPrice": 500,
-  "stock": 100
-}
-```
-
-#### 3.3 상품 조회
+#### 3.2 상품 조회
 
 | 항목 | 내용 |
 |------|------|
@@ -435,7 +407,7 @@
 
 ## 관리자 (Admin) API
 
-관리자 전용 기능. 실제 연동 시 인증/권한 체크 방식은 별도 협의.
+관리자 전용 기능. **로그인 ID가 `ADMIN`으로 시작하는 계정**으로 로그인한 사용자만 호출 가능합니다. (일반 로그인과 동일한 `POST /api/v1/auth/login` 사용 후, `X-User-Id`로 어드민 API 호출.)
 
 ### 1. 예산 (Budget)
 
@@ -550,7 +522,44 @@
 
 ### 3. 상품 (Admin Products)
 
-#### 3.1 상품 수정
+#### 3.1 상품 등록
+
+| 항목 | 내용 |
+|------|------|
+| **역할** | 상품명·포인트 가격·재고로 상품 생성. **어드민만 호출 가능.** |
+| **Method** | `POST` |
+| **Path** | `/api/v1/admin/products` |
+
+**Request Body**
+
+```json
+{
+  "name": "기프트카드 5000원",
+  "pointPrice": 500,
+  "stock": 100
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| name | string | O | 상품명 (최대 200자) |
+| pointPrice | number | O | 1개당 포인트 가격 (0 이상) |
+| stock | number | - | 재고 (0 이상, 기본 0) |
+
+**Response** `201 Created`
+
+```json
+{
+  "id": 1,
+  "name": "기프트카드 5000원",
+  "pointPrice": 500,
+  "stock": 100
+}
+```
+
+**에러** `400`: 유효하지 않은 값(C001)
+
+#### 3.2 상품 수정
 
 | 항목 | 내용 |
 |------|------|
@@ -594,7 +603,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| **역할** | 참여 취소(회수)를 위한 목록. participationId, userId, 닉네임, 참여 시간 제공. |
+| **역할** | 참여 취소(회수)를 위한 목록. participationId, userId, 닉네임, 참여 시간, **지급받은 포인트** 제공. |
 | **Method** | `GET` |
 | **Path** | `/api/v1/admin/roulette/participations` |
 
@@ -606,7 +615,8 @@
     "participationId": 1,
     "userId": 1,
     "nickname": "홍길동",
-    "participatedAt": "2025-02-08T14:00:00"
+    "participatedAt": "2025-02-08T14:00:00",
+    "grantedPoint": 500
   }
 ]
 ```
@@ -617,6 +627,7 @@
 | userId | number | 사용자 ID |
 | nickname | string | 유저 닉네임 |
 | participatedAt | string | 참여 시간 (ISO 8601) |
+| grantedPoint | number | 지급받은 포인트 (P). 꽝이면 0. |
 
 #### 4.2 룰렛 참여 취소
 
@@ -686,6 +697,6 @@
 | **Request** | JSON body는 문서의 Request Body 참고. `Content-Type: application/json` 필수. |
 | **Response** | 성공 시 문서의 Response JSON 파싱. 실패 시 `code`, `message`로 에러 처리 및 사용자 안내. |
 | **일반 사용자** | Auth → Users/Products/Orders/Points/Roulette. 주문·포인트·룰렛은 `X-User-Id` 필요. |
-| **관리자** | Admin Budget/Orders/Products/Roulette. 실제 환경에서는 관리자 인증·권한 적용 필요. |
+| **관리자** | Admin Budget/Orders/Products/Roulette. 로그인 ID가 `ADMIN`으로 시작하는 계정으로 로그인한 후 동일하게 `X-User-Id`로 어드민 API 호출. |
 
 이 문서는 현재 구현된 API 기준으로 작성되었으며, 스펙 변경 시 함께 업데이트해야 합니다.
