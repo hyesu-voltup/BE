@@ -20,7 +20,8 @@ class AdminRouletteQueryService(
                 participationId = d.id!!,
                 userId = d.user.id!!,
                 nickname = d.user.name,
-                participatedAt = d.createdAt
+                participatedAt = d.createdAt,
+                grantedPoint = d.grantedPoint
             )
         }
 }

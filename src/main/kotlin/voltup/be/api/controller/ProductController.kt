@@ -2,22 +2,16 @@ package voltup.be.api.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import voltup.be.api.dto.request.ProductCreateRequest
 import voltup.be.api.dto.response.ProductResponse
 import voltup.be.api.service.ProductService
 
 /**
  * 상품 API.
- * 목적: 전체 상품 목록·등록·단건 조회.
+ * 목적: 전체 상품 목록·단건 조회. (상품 등록은 어드민 전용: POST /api/v1/admin/products)
  */
 @Tag(name = "User API", description = "일반 사용자 기능")
 @RestController
@@ -32,13 +26,6 @@ class ProductController(
     )
     @GetMapping
     fun getAll(): List<ProductResponse> = productService.getAll()
-
-    @Operation(summary = "상품 등록", description = "상품명·포인트 가격·재고로 상품 생성")
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun create(@Valid @RequestBody request: ProductCreateRequest): ProductResponse {
-        return productService.create(request)
-    }
 
     @Operation(summary = "상품 조회", description = "ID로 상품 정보 조회")
     @GetMapping("/{productId}")
