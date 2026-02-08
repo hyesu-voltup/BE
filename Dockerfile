@@ -17,4 +17,4 @@ COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 10000
 
 # 배포 환경(prod) 프로필 적용 및 실행
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-Dserver.port=10000", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=deploy", "-Dserver.port=10000", "-jar", "app.jar"]
