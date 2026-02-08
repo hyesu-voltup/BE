@@ -20,4 +20,6 @@ interface DailyBudgetRepository : JpaRepository<DailyBudget, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT d FROM DailyBudget d WHERE d.id = :id")
     fun findByIdForUpdate(@Param("id") id: Long): DailyBudget?
+
+    fun findAllByOrderByCreatedAtDesc(): List<DailyBudget>
 }

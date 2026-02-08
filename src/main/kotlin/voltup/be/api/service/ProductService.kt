@@ -29,6 +29,10 @@ class ProductService(
     }
 
     @Transactional(readOnly = true)
+    fun getAll(): List<ProductResponse> =
+        productRepository.findAll().map { ProductResponse.from(it) }
+
+    @Transactional(readOnly = true)
     fun getById(productId: Long): ProductResponse {
         val product = findProductById(productId)
         return ProductResponse.from(product)

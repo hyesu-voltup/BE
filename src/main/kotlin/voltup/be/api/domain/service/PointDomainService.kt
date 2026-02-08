@@ -90,4 +90,18 @@ class PointDomainService(
         point.deduct(reclaimAmount)
         pointDetailRepository.delete(detail)
     }
+
+    /**
+     * 조회 시점 만료 반영: 해당 포인트 계정의 expiredAt이 지난 건을 잔액에서 차감하고 applied 처리.
+     * 목적: 포인트 조회 시 서버 시간 기준으로 만료 데이터를 총액에서 제외.
+     */
+    @Transactional
+    fun expireForPoint(point: Point) {
+        val now = LocalDateTime.now()
+        val expired = pointDetailRepository.findExpiredAndNotAppliedByPointId(point.id!!, now)
+        expired.forEach { detail ->
+            point.deductForExpiry(detail.amount)
+            detail.applied = true
+        }
+    }
 }

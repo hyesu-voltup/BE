@@ -17,14 +17,21 @@ import voltup.be.api.service.ProductService
 
 /**
  * 상품 API.
- * 목적: 상품 등록·조회 REST 엔드포인트.
+ * 목적: 전체 상품 목록·등록·단건 조회.
  */
-@Tag(name = "Product", description = "상품 API")
+@Tag(name = "User API", description = "일반 사용자 기능")
 @RestController
 @RequestMapping("/api/v1/products")
 class ProductController(
     private val productService: ProductService
 ) {
+
+    @Operation(
+        summary = "전체 상품 목록",
+        description = "모든 사용자가 볼 수 있도록 상품 ID, 상품명, 가격, 재고 리스트 반환."
+    )
+    @GetMapping
+    fun getAll(): List<ProductResponse> = productService.getAll()
 
     @Operation(summary = "상품 등록", description = "상품명·포인트 가격·재고로 상품 생성")
     @PostMapping
