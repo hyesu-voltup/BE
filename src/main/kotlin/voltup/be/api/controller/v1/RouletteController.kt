@@ -1,7 +1,9 @@
 package voltup.be.api.controller.v1
 
 import voltup.be.api.dto.v1.RouletteParticipateResponse
+import voltup.be.api.dto.v1.RouletteStatusResponse
 import voltup.be.api.service.v1.RouletteParticipateService
+import voltup.be.api.service.v1.RouletteStatusService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -24,8 +27,21 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/roulette")
 class RouletteController(
-    private val rouletteParticipateService: RouletteParticipateService
+    private val rouletteParticipateService: RouletteParticipateService,
+    private val rouletteStatusService: RouletteStatusService
 ) {
+
+    @Operation(
+        summary = "룰렛 상태 조회",
+        description = "당일 룰렛 일일 예산 잔여량(remainingBudget), 당일 참여 여부(alreadyParticipated). " +
+            "일반 사용자도 남은 예산 확인 가능."
+    )
+    @ApiResponses(value = [ApiResponse(responseCode = "200", description = "성공")])
+    @GetMapping("/status")
+    fun getStatus(
+        @Parameter(description = "현재 로그인 사용자 ID", required = true)
+        @RequestHeader("X-User-Id") userId: Long
+    ): RouletteStatusResponse = rouletteStatusService.getStatus(userId)
 
     @Operation(
         summary = "룰렛 돌리기",

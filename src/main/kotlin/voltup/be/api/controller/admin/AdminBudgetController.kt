@@ -47,18 +47,18 @@ class AdminBudgetController(
     }
 
     @Operation(
-        summary = "오늘 예산 강제 설정",
-        description = "당일 총 지급액을 강제로 설정. (0 ~ 100,000)"
+        summary = "오늘 예산 강제 설정 (잔여 기준)",
+        description = "당일 잔여 예산(remaining)을 강제 설정. 이미 지급액보다 적게 수정 불가 시 C016."
     )
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "200", description = "설정 완료"),
-            ApiResponse(responseCode = "400", description = "유효하지 않은 값", content = [Content(schema = Schema(implementation = voltup.be.api.exception.ErrorResponse::class))])
+            ApiResponse(responseCode = "400", description = "유효하지 않은 값 또는 이미 지급되어 더 낮게 수정 불가(C016)", content = [Content(schema = Schema(implementation = voltup.be.api.exception.ErrorResponse::class))])
         ]
     )
     @PatchMapping
     fun patchBudget(@Valid @RequestBody request: AdminBudgetPatchRequest): AdminBudgetResponse {
-        val dto = adminBudgetService.patchTodayBudget(request.totalGranted)
+        val dto = adminBudgetService.patchTodayBudget(request.remaining)
         return AdminBudgetResponse(
             budgetDate = dto.budgetDate,
             totalGranted = dto.totalGranted,

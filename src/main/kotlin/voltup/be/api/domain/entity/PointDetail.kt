@@ -38,7 +38,12 @@ class PointDetail(
 
     /** ROULETTE → participationId(DailyBudget.id), REFUND → orderId */
     @Column(name = "reference_id")
-    var referenceId: Long? = null
+    var referenceId: Long? = null,
+
+    /** 내역 상태. OK=정상, RECLAIMED_BY_ADMIN=관리자 수거(히스토리에 "관리자에 의해 수거되었습니다" 표시) */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    var status: PointDetailStatus = PointDetailStatus.OK
 ) : BaseEntity() {
 
     @jakarta.persistence.Id

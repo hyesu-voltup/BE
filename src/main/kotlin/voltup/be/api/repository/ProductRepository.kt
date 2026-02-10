@@ -13,11 +13,13 @@ import voltup.be.api.domain.entity.Product
  */
 interface ProductRepository : JpaRepository<Product, Long> {
 
+    fun findAllByDeletedFalse(): List<Product>
+    fun findByIdAndDeletedFalse(productId: Long): Product?
+
     /**
-     * 비관적 락으로 상품 조회 (주문 시 동시 재고 차감 방지).
-     * @return 락이 걸린 Product 또는 null
+     * 비관적 락으로 상품 조회 (주문 시 동시 재고 차감 방지). 삭제된 상품 제외.
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Product p WHERE p.id = :productId")
-    fun findByIdForUpdate(@Param("productId") productId: Long): Product?
+    @Query("SELECT p FROM Product p WHERE p.id = :productId AND p.deleted = false")
+    fun findByIdAndDeletedFalseForUpdate(@Param("productId") productId: Long): Product?
 }

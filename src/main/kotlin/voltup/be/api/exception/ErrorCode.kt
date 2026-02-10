@@ -27,6 +27,7 @@ enum class ErrorCode(
     ORDER_ALREADY_CANCELLED(HttpStatus.CONFLICT, "C013", "이미 취소된 주문입니다."),
     PARTICIPATION_ALREADY_CANCELLED(HttpStatus.CONFLICT, "C014", "이미 취소된 룰렛 참여입니다."),
     INSUFFICIENT_POINT_FOR_RECLAIM(HttpStatus.BAD_REQUEST, "C015", "룰렛 취소 시 회수할 포인트가 부족합니다."),
+    BUDGET_CANNOT_DECREASE(HttpStatus.BAD_REQUEST, "C016", "이미 지급되어 더 낮게 수정이 불가합니다."),
 
     // 5xx - 서버 오류
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 오류가 발생했습니다.")

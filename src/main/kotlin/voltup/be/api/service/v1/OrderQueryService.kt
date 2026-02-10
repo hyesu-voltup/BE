@@ -26,7 +26,8 @@ class OrderQueryService(
                 productName = o.product.name,
                 quantity = o.quantity,
                 usedPoint = o.pointAmount,
-                orderedAt = o.createdAt
+                orderedAt = o.createdAt,
+                status = o.status.name
             )
         }
     }

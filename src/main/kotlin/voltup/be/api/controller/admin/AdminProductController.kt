@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -48,6 +49,32 @@ class AdminProductController(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@Valid @RequestBody request: ProductCreateRequest): ProductResponse {
         return productService.create(request)
+    }
+
+    @Operation(
+        summary = "상품 수정",
+        description = "상품명, 가격, 재고 등을 수정. 전달한 필드만 변경."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "수정 완료"),
+            ApiResponse(responseCode = "404", description = "상품 없음", content = [Content(schema = Schema(implementation = voltup.be.api.exception.ErrorResponse::class))])
+        ]
+    )
+    @Operation(
+        summary = "상품 삭제",
+        description = "상품 소프트 삭제. 삭제된 상품은 목록/조회에서 제외됨."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "204", description = "삭제 완료"),
+            ApiResponse(responseCode = "404", description = "상품 없음 또는 이미 삭제됨", content = [Content(schema = Schema(implementation = voltup.be.api.exception.ErrorResponse::class))])
+        ]
+    )
+    @DeleteMapping("/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@Parameter(description = "상품 ID", required = true) @PathVariable productId: Long) {
+        adminProductService.delete(productId)
     }
 
     @Operation(

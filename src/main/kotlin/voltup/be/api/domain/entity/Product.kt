@@ -20,7 +20,11 @@ class Product(
 
     /** 재고 수량 (0 이상) */
     @Column(nullable = false)
-    var stock: Int = 0
+    var stock: Int = 0,
+
+    /** 어드민 삭제 여부. true면 목록/조회에서 제외. */
+    @Column(nullable = false)
+    var deleted: Boolean = false
 ) : BaseEntity() {
 
     @jakarta.persistence.Id

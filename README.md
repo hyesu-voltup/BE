@@ -226,7 +226,8 @@
     "productName": "기프트카드 5000원",
     "quantity": 2,
     "usedPoint": 1000,
-    "orderedAt": "2025-02-08T14:30:00"
+    "orderedAt": "2025-02-08T14:30:00",
+    "status": "ORDERED"
   }
 ]
 ```
@@ -238,6 +239,7 @@
 | quantity | number | 수량 |
 | usedPoint | number | 사용 포인트 |
 | orderedAt | string | 구매일 (ISO 8601) |
+| status | string | ORDERED=승인(기본), CANCELLED=취소(관리자 상품 회수) |
 
 #### 4.2 상품 구매 (주문 생성)
 
@@ -345,7 +347,14 @@
     {
       "description": "룰렛 당첨",
       "amount": 500,
-      "expiryDate": "2025-03-10"
+      "expiryDate": "2025-03-10",
+      "statusMessage": null
+    },
+    {
+      "description": "룰렛 당첨",
+      "amount": 300,
+      "expiryDate": null,
+      "statusMessage": "관리자에 의해 수거되었습니다"
     }
   ]
 }
@@ -354,10 +363,11 @@
 | 필드 | 타입 | 설명 |
 |------|------|------|
 | totalBalance | number | 총 잔액 (만료 반영) |
-| histories | array | 유효한 획득 내역 리스트 |
+| histories | array | 유효한 획득 내역 + 관리자 수거 내역 리스트 |
 | histories[].description | string | 내역 설명 (예: 룰렛 당첨, 주문 취소 환불) |
 | histories[].amount | number | 포인트 금액 |
-| histories[].expiryDate | string \| null | 만료 예정일 (YYYY-MM-DD) |
+| histories[].expiryDate | string \| null | 만료 예정일 (YYYY-MM-DD). 수거된 건은 null |
+| histories[].statusMessage | string \| null | 정상이면 null, 관리자 수거 시 "관리자에 의해 수거되었습니다" |
 
 **에러** `404`: 포인트 계정 없음(C004)
 
@@ -365,7 +375,35 @@
 
 ### 6. 룰렛 (Roulette)
 
-#### 6.1 룰렛 돌리기 (참여)
+#### 6.1 룰렛 상태 조회 (일반 사용자 예산 확인)
+
+| 항목 | 내용 |
+|------|------|
+| **역할** | 당일 룰렛 일일 예산 잔여량(remainingBudget), 당일 참여 여부(alreadyParticipated). 일반 사용자도 남은 예산 확인 가능. |
+| **Method** | `GET` |
+| **Path** | `/api/v1/roulette/status` |
+
+**Request Headers**
+
+| 헤더 | 필수 | 설명 |
+|------|------|------|
+| X-User-Id | O | 현재 로그인 사용자 ID |
+
+**Response** `200 OK`
+
+```json
+{
+  "remainingBudget": 50000,
+  "alreadyParticipated": false
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| remainingBudget | number | 오늘 룰렛 일일 예산 잔여 포인트 (P). 0이면 당첨 불가(꽝). |
+| alreadyParticipated | boolean | 당일 이미 참여 여부. true면 오늘은 더 이상 참여 불가. |
+
+#### 6.2 룰렛 돌리기 (참여)
 
 | 항목 | 내용 |
 |------|------|
@@ -435,11 +473,11 @@
 | totalGranted | number | 당일 누적 지급 포인트 |
 | remaining | number | 잔여 예산 (100,000 - totalGranted) |
 
-#### 1.2 오늘 예산 강제 설정
+#### 1.2 오늘 예산 강제 설정 (잔여 기준)
 
 | 항목 | 내용 |
 |------|------|
-| **역할** | 당일 총 지급액을 강제로 설정 (0 ~ 100,000). |
+| **역할** | 당일 **잔여 예산(remaining)** 을 강제 설정. 이미 지급액보다 적게 수정(remaining을 크게)하려 하면 C016. |
 | **Method** | `PATCH` |
 | **Path** | `/api/v1/admin/budget` |
 
@@ -447,19 +485,21 @@
 
 ```json
 {
-  "totalGranted": 30000
+  "remaining": 50000
 }
 ```
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| totalGranted | number | O | 강제 설정할 당일 총 지급액 (0 ~ 100,000) |
+| remaining | number | O | 강제 설정할 당일 잔여 예산 (0 ~ 100,000). 이미 지급된 금액보다 많게 설정 불가 시 C016. |
 
 **Response** `200 OK`
 
 동일한 예산 응답 구조 (budgetDate, totalGranted, remaining).
 
-**에러** `400`: 유효하지 않은 값(C001)
+**에러**
+
+- `400`: 유효하지 않은 값(C001), 이미 지급되어 더 낮게 수정 불가(C016)
 
 ---
 
@@ -559,7 +599,25 @@
 
 **에러** `400`: 유효하지 않은 값(C001)
 
-#### 3.2 상품 수정
+#### 3.2 상품 삭제
+
+| 항목 | 내용 |
+|------|------|
+| **역할** | 상품 소프트 삭제. 삭제된 상품은 목록/조회에서 제외됨. |
+| **Method** | `DELETE` |
+| **Path** | `/api/v1/admin/products/{productId}` |
+
+**Path Parameters**
+
+| 이름 | 타입 | 설명 |
+|------|------|------|
+| productId | number | 상품 ID |
+
+**Response** `204 No Content` (body 없음)
+
+**에러** `404`: 상품 없음 또는 이미 삭제됨(C003)
+
+#### 3.3 상품 수정
 
 | 항목 | 내용 |
 |------|------|
@@ -685,6 +743,7 @@
 | C013 | 409 | 이미 취소된 주문 |
 | C014 | 409 | 이미 취소된 룰렛 참여 |
 | C015 | 400 | 룰렛 취소 시 회수할 포인트 부족 |
+| C016 | 400 | 이미 지급되어 더 낮게 수정이 불가합니다. (예산 잔여 설정 시) |
 | S001 | 500 | 서버 오류 |
 
 ---

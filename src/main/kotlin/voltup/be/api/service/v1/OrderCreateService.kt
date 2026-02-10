@@ -31,7 +31,7 @@ class OrderCreateService(
         userService.findUserById(userId)
         val point = pointRepository.findByUserIdForUpdate(userId)
             ?: throw NotFoundException(ErrorCode.NOT_FOUND_POINT)
-        val product = productRepository.findByIdForUpdate(productId)
+        val product = productRepository.findByIdAndDeletedFalseForUpdate(productId)
             ?: throw NotFoundException(ErrorCode.NOT_FOUND_PRODUCT)
         if (!product.hasStock(quantity)) {
             throw InsufficientStockException(product.stock, quantity)
