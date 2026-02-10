@@ -41,3 +41,6 @@ out/
 
 ### .env ###
 .env
+
+### dev properties ###
+src/main/resources/application-dev.properties
