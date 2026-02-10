@@ -52,16 +52,6 @@ class AdminProductController(
     }
 
     @Operation(
-        summary = "상품 수정",
-        description = "상품명, 가격, 재고 등을 수정. 전달한 필드만 변경."
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "200", description = "수정 완료"),
-            ApiResponse(responseCode = "404", description = "상품 없음", content = [Content(schema = Schema(implementation = voltup.be.api.exception.ErrorResponse::class))])
-        ]
-    )
-    @Operation(
         summary = "상품 삭제",
         description = "상품 소프트 삭제. 삭제된 상품은 목록/조회에서 제외됨."
     )
