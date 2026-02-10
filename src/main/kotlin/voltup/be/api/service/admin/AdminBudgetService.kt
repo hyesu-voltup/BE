@@ -3,6 +3,7 @@ package voltup.be.api.service.admin
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import voltup.be.api.domain.entity.SystemDailyBudget
+import voltup.be.api.repository.DailyBudgetRepository
 import voltup.be.api.repository.SystemDailyBudgetRepository
 import java.time.LocalDate
 
@@ -12,22 +13,26 @@ import java.time.LocalDate
  */
 @Service
 class AdminBudgetService(
-    private val systemDailyBudgetRepository: SystemDailyBudgetRepository
+    private val systemDailyBudgetRepository: SystemDailyBudgetRepository,
+    private val dailyBudgetRepository: DailyBudgetRepository
 ) {
 
     @Transactional(readOnly = true)
     fun getTodayBudget(): AdminBudgetDto {
         val today = LocalDate.now()
+        val participantCount = dailyBudgetRepository.countByBudgetDateAndCancelledFalse(today)
         val budget = systemDailyBudgetRepository.findByBudgetDate(today)
             ?: return AdminBudgetDto(
                 budgetDate = today,
                 totalGranted = 0L,
-                remaining = SystemDailyBudget.DAILY_LIMIT
+                remaining = SystemDailyBudget.DAILY_LIMIT,
+                participantCount = participantCount
             )
         return AdminBudgetDto(
             budgetDate = budget.budgetDate,
             totalGranted = budget.totalGranted,
-            remaining = (SystemDailyBudget.DAILY_LIMIT - budget.totalGranted).coerceAtLeast(0)
+            remaining = (SystemDailyBudget.DAILY_LIMIT - budget.totalGranted).coerceAtLeast(0),
+            participantCount = participantCount
         )
     }
 
@@ -51,10 +56,12 @@ class AdminBudgetService(
         }
         budget.totalGranted = newTotalGranted
         budget.touch()
+        val participantCount = dailyBudgetRepository.countByBudgetDateAndCancelledFalse(today)
         return AdminBudgetDto(
             budgetDate = budget.budgetDate,
             totalGranted = budget.totalGranted,
-            remaining = (SystemDailyBudget.DAILY_LIMIT - budget.totalGranted).coerceAtLeast(0)
+            remaining = (SystemDailyBudget.DAILY_LIMIT - budget.totalGranted).coerceAtLeast(0),
+            participantCount = participantCount
         )
     }
 
@@ -69,6 +76,7 @@ class AdminBudgetService(
     data class AdminBudgetDto(
         val budgetDate: LocalDate,
         val totalGranted: Long,
-        val remaining: Long
+        val remaining: Long,
+        val participantCount: Long
     )
 }

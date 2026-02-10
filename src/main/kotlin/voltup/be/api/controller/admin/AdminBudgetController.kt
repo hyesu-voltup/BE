@@ -42,7 +42,8 @@ class AdminBudgetController(
         return AdminBudgetResponse(
             budgetDate = dto.budgetDate,
             totalGranted = dto.totalGranted,
-            remaining = dto.remaining
+            remaining = dto.remaining,
+            participantCount = dto.participantCount
         )
     }
 
@@ -62,7 +63,8 @@ class AdminBudgetController(
         return AdminBudgetResponse(
             budgetDate = dto.budgetDate,
             totalGranted = dto.totalGranted,
-            remaining = dto.remaining
+            remaining = dto.remaining,
+            participantCount = dto.participantCount
         )
     }
 }
