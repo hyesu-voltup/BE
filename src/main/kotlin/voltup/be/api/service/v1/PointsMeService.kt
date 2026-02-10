@@ -3,6 +3,7 @@ package voltup.be.api.service.v1
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import voltup.be.api.domain.entity.PointDetail
+import voltup.be.api.domain.entity.PointDetailStatus
 import voltup.be.api.domain.entity.PointDetailType
 import voltup.be.api.dto.v1.PointHistoryItemResponse
 import voltup.be.api.dto.v1.PointsDetailResponse
@@ -50,8 +51,8 @@ class PointsMeService(
         pointDomainService.expireForPoint(point)
         val totalBalance = point.balance
         val now = LocalDateTime.now()
-        val validDetails = pointDetailRepository.findValidByPointId(point.id!!, now)
-        val histories = validDetails.map { toHistoryItem(it) }
+        val historyDetails = pointDetailRepository.findAllByPointIdForHistory(point.id!!, now)
+        val histories = historyDetails.map { toHistoryItem(it) }
         return PointsDetailResponse(totalBalance = totalBalance, histories = histories)
     }
 
@@ -63,10 +64,15 @@ class PointsMeService(
             PointDetailType.ROULETTE -> "룰렛 당첨"
             PointDetailType.REFUND -> "주문 취소 환불"
         }
+        val statusMessage = when (d.status) {
+            PointDetailStatus.OK -> null
+            PointDetailStatus.RECLAIMED_BY_ADMIN -> "관리자에 의해 수거되었습니다"
+        }
         return PointHistoryItemResponse(
             description = description,
             amount = d.amount,
-            expiryDate = d.expiredAt.toLocalDate()
+            expiryDate = if (d.status == PointDetailStatus.RECLAIMED_BY_ADMIN) null else d.expiredAt.toLocalDate(),
+            statusMessage = statusMessage
         )
     }
 

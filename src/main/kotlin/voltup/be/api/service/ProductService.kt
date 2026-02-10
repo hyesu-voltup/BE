@@ -30,7 +30,7 @@ class ProductService(
 
     @Transactional(readOnly = true)
     fun getAll(): List<ProductResponse> =
-        productRepository.findAll().map { ProductResponse.from(it) }
+        productRepository.findAllByDeletedFalse().map { ProductResponse.from(it) }
 
     @Transactional(readOnly = true)
     fun getById(productId: Long): ProductResponse {
@@ -38,9 +38,9 @@ class ProductService(
         return ProductResponse.from(product)
     }
 
-    /** 내부/주문용: 엔티티 조회 (락 없음). */
+    /** 내부/주문용: 삭제되지 않은 상품만 조회 (락 없음). */
     fun findProductById(productId: Long): Product {
-        return productRepository.findById(productId)
-            .orElseThrow { NotFoundException(ErrorCode.NOT_FOUND_PRODUCT) }
+        return productRepository.findByIdAndDeletedFalse(productId)
+            ?: throw NotFoundException(ErrorCode.NOT_FOUND_PRODUCT)
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import voltup.be.api.domain.entity.Point
 import voltup.be.api.domain.entity.PointDetail
+import voltup.be.api.domain.entity.PointDetailStatus
 import voltup.be.api.domain.entity.PointDetailType
 import voltup.be.api.exception.InsufficientPointForReclaimException
 import voltup.be.api.exception.NotFoundException
@@ -48,7 +49,8 @@ class PointDomainService(
             expiredAt = expiredAt,
             applied = false,
             type = type,
-            referenceId = referenceId
+            referenceId = referenceId,
+            status = PointDetailStatus.OK
         )
         pointDetailRepository.save(detail)
     }
@@ -76,6 +78,9 @@ class PointDomainService(
      * @throws NotFoundException 해당 참여 건 PointDetail 없을 때
      * @throws InsufficientPointForReclaimException 잔액 부족 시
      */
+    /**
+     * 룰렛 취소 회수. 해당 참여 건 PointDetail을 삭제하지 않고 status=RECLAIMED_BY_ADMIN으로 남겨 히스토리 유지.
+     */
     @Transactional
     fun reclaim(point: Point, participationId: Long) {
         val detail = pointDetailRepository.findByPointIdAndTypeAndReferenceId(
@@ -83,12 +88,18 @@ class PointDomainService(
             PointDetailType.ROULETTE,
             participationId
         ) ?: throw NotFoundException(ErrorCode.NOT_FOUND_PARTICIPATION)
+        if (detail.status == PointDetailStatus.RECLAIMED_BY_ADMIN) {
+            throw voltup.be.api.exception.BusinessException(
+                voltup.be.api.exception.ErrorCode.PARTICIPATION_ALREADY_CANCELLED
+            )
+        }
         val reclaimAmount = detail.amount
         if (point.balance < reclaimAmount) {
             throw InsufficientPointForReclaimException(point.balance, reclaimAmount)
         }
         point.deduct(reclaimAmount)
-        pointDetailRepository.delete(detail)
+        detail.status = PointDetailStatus.RECLAIMED_BY_ADMIN
+        detail.touch()
     }
 
     /**
