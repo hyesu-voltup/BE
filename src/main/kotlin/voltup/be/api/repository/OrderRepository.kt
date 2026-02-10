@@ -17,7 +17,11 @@ interface OrderRepository : JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.id = :id")
     fun findByIdForUpdate(@Param("id") id: Long): Order?
 
-    fun findByUserIdOrderByCreatedAtDesc(userId: Long): List<Order>
+    /** 주문 목록 조회. user, product JOIN FETCH로 N+1·LazyInitializationException 방지 (배포 환경 500 에러 대응). */
+    @Query("SELECT o FROM Order o JOIN FETCH o.user JOIN FETCH o.product WHERE o.user.id = :userId ORDER BY o.createdAt DESC")
+    fun findByUserIdOrderByCreatedAtDesc(@Param("userId") userId: Long): List<Order>
 
+    /** 전체 주문 목록. user, product JOIN FETCH로 LazyInitializationException 방지. */
+    @Query("SELECT DISTINCT o FROM Order o JOIN FETCH o.user JOIN FETCH o.product ORDER BY o.createdAt DESC")
     fun findAllByOrderByCreatedAtDesc(): List<Order>
 }

@@ -10,6 +10,9 @@ import voltup.be.api.domain.entity.Product
 /**
  * Product 엔티티 저장소.
  * 목적: 상품 조회/저장. 주문 시 재고 차감을 위해 비관적 락 사용.
+ *
+ * 배포 시 500 방지: products 테이블에 deleted 컬럼이 있어야 합니다.
+ * 기존 DB에는 ALTER TABLE products ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE; 실행 필요.
  */
 interface ProductRepository : JpaRepository<Product, Long> {
 

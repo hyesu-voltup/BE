@@ -22,4 +22,7 @@ interface DailyBudgetRepository : JpaRepository<DailyBudget, Long> {
     fun findByIdForUpdate(@Param("id") id: Long): DailyBudget?
 
     fun findAllByOrderByCreatedAtDesc(): List<DailyBudget>
+
+    /** 당일 룰렛 참여 인원 수 (취소 제외). */
+    fun countByBudgetDateAndCancelledFalse(budgetDate: LocalDate): Long
 }
