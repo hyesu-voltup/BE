@@ -42,14 +42,15 @@ class AdminBudgetController(
         return AdminBudgetResponse(
             budgetDate = dto.budgetDate,
             totalGranted = dto.totalGranted,
+            totalLimit = dto.totalLimit,
             remaining = dto.remaining,
             participantCount = dto.participantCount
         )
     }
 
     @Operation(
-        summary = "오늘 예산 강제 설정 (잔여 기준)",
-        description = "당일 잔여 예산(remaining)을 강제 설정. 이미 지급액보다 적게 수정 불가 시 C016."
+        summary = "오늘 예산 수정 (발급 가능 전체 포인트)",
+        description = "설정할 남은 예산(remaining)을 보내면, 오늘 룰렛 발급 가능 전체 포인트(totalLimit)가 totalGranted + remaining 으로 설정됨. totalGranted는 변경되지 않음. 이미 지급액보다 잔여를 적게 설정 불가 시 C016."
     )
     @ApiResponses(
         value = [
@@ -63,6 +64,7 @@ class AdminBudgetController(
         return AdminBudgetResponse(
             budgetDate = dto.budgetDate,
             totalGranted = dto.totalGranted,
+            totalLimit = dto.totalLimit,
             remaining = dto.remaining,
             participantCount = dto.participantCount
         )

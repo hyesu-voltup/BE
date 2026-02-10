@@ -27,8 +27,8 @@ class RouletteStatusService(
     fun getStatus(userId: Long): RouletteStatusResponse {
         val today = LocalDate.now()
         val remainingBudget = systemDailyBudgetRepository.findByBudgetDate(today)
-            ?.let { (SystemDailyBudget.DAILY_LIMIT - it.totalGranted).coerceAtLeast(0L) }
-            ?: SystemDailyBudget.DAILY_LIMIT
+            ?.remaining()
+            ?: SystemDailyBudget.DEFAULT_DAILY_LIMIT
         val alreadyParticipated = dailyBudgetRepository.existsByUserIdAndBudgetDate(userId, today)
         return RouletteStatusResponse(
             remainingBudget = remainingBudget,

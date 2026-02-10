@@ -44,7 +44,7 @@ class RouletteParticipateService(
             throw InsufficientBudgetException(
                 systemBudget.totalGranted,
                 amount,
-                SystemDailyBudget.DAILY_LIMIT
+                systemBudget.dailyLimit
             )
         }
         systemBudget.addGranted(amount)
@@ -62,7 +62,9 @@ class RouletteParticipateService(
     private fun getOrCreateSystemBudgetWithLock(today: LocalDate): SystemDailyBudget {
         systemDailyBudgetRepository.findByBudgetDateForUpdate(today)?.let { return it }
         try {
-            systemDailyBudgetRepository.saveAndFlush(SystemDailyBudget(budgetDate = today, totalGranted = 0L))
+            systemDailyBudgetRepository.saveAndFlush(
+                SystemDailyBudget(budgetDate = today, totalGranted = 0L, dailyLimit = SystemDailyBudget.DEFAULT_DAILY_LIMIT)
+            )
         } catch (_: DataIntegrityViolationException) {
             // 동시에 다른 트랜잭션이 생성한 경우
         }
